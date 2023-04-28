@@ -83,7 +83,7 @@
 
     If the acting credentials do not have directory-level permission to perform the task, Active Directory module for Windows PowerShell returns a terminating error.
 .EXAMPLE
-
+    New-ZHLSampleADUsers -Domain 'zackshomelab.com' -Count 5 -InstallModule -DryRun
 .NOTES
     Author - Zack Flowers
 .LINK
@@ -102,7 +102,7 @@ function New-ZHLSampleADUsers {
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]
-            [Alias("Server", "ComputerName", "cn", "computer")]
+            [Alias("ComputerName", "cn", "computer")]
             [ValidateNotNullOrEmpty()]
         [string]$Server,
 
@@ -117,14 +117,14 @@ function New-ZHLSampleADUsers {
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
-        [PSSession]$Session,
+        [System.Management.Automation.Runspaces.PSSession]$Session,
 
         [parameter(Mandatory,
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments,
             ParameterSetName="ProvidedOUs")]
         [Alias("Identity")]
-        [ADOrganizationalUnit]$OUs,
+        [Microsoft.ActiveDirectory.Management.ADOrganizationalUnit]$OUs,
 
         [parameter(Mandatory,
             ValueFromPipelineByPropertyName,
@@ -141,7 +141,7 @@ function New-ZHLSampleADUsers {
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
             [ValidateSet("Base", 0, "OneLevel", 1, "Subtree", 2)]
-        [ADSearchScope]$SearchScope,
+        [Microsoft.ActiveDirectory.Management.ADSearchScope]$SearchScope,
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]
@@ -153,7 +153,7 @@ function New-ZHLSampleADUsers {
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
             [ValidateNotNullOrEmpty()]
-        [PSCredential]$Credential,
+        [System.Management.Automation.PSCredential]$Credential,
 
         [parameter(Mandatory=$false)]
         [switch]$DryRun,
@@ -179,6 +179,9 @@ function New-ZHLSampleADUsers {
 
         # Create a variable to hold our Get-ADOrganizationalUnit Parameter splatter
         $getOUSplatter = @{}
+
+        # Create a variable to hold our New-ZHLSampleData Parameter splatter
+        $newZHLSampleDataSplatter = @{}
 
         # Create a variable to hold our New-ADUser connection parameters
         $newADUserSplatter = @{}
@@ -222,7 +225,7 @@ function New-ZHLSampleADUsers {
 
         #region Install Active Directory PowerShell Module
         if ($PSVersionTable.Platform -ne "Unix") {
-            if (($Server -match $(hostname)) -or $Server -eq 'localhost') {
+            if ($Server -match $(hostname) -or $Server -eq 'localhost' -or $null -eq $Server -or $Server -eq "") {
                 # Install / Import PowerShell module 'ActiveDirectory'
                 try {
                     if ($InstallModule) {
@@ -342,12 +345,25 @@ function New-ZHLSampleADUsers {
 
         #region Generate User Data
         try {
-            Write-Verbose "New-ZHLSampleADUsers: Creating sample data..."
-            if (-not $DryRun -or ($DryRun -and $null -ne $orgUnits)) {
-                $sampleData = New-ZHLSampleData -Count $Count -Domain $Domain -Template (New-ZHLTemplateString) -OUs $orgUnits -Unique -ErrorAction stop
-            } else {
-                $sampleData = New-ZHLSampleData -Count $Count -Domain $Domain -Template (New-ZHLTemplateString) -Unique -ErrorAction stop
+            
+            $newZHLSampleDataSplatter.Add('Count', $Count)
+            if ($PSBoundParameters.ContainsKey('Domain')) {
+                $newZHLSampleDataSplatter.Add('Domain', $Domain)
             }
+            $newZHLSampleDataSplatter.Add('Template', (New-ZHLTemplateString))
+            if ($null -ne $orgUnits -and $orgUnits -ne "") {
+                $newZHLSampleDataSplatter.Add('OUs', $orgUnits)
+            }
+            if ($InstallModule) {
+                $newZHLSampleDataSplatter.Add('InstallModule', $InstallModule)
+            }
+            $newZHLSampleDataSplatter.Add('Unique', $true)
+            $newZHLSampleDataSplatter.Add('ErrorAction', 'Stop')
+
+            Write-Debug "New-ZHLSampleADUsers: New-ZHLSampleData Splatter = $newZHLSampleDataSplatter"
+
+            Write-Verbose "New-ZHLSampleADUsers: Creating sample data..."
+            $sampleData = New-ZHLSampleData @newZHLSampleDataSplatter
 
             # Check if we have 'something'
             if ($null -eq $sampleData -or $sampleData -eq "") {

@@ -32,6 +32,8 @@ function Import-AD {
 
     Begin {
 
+        $alreadyImported = $false
+
         # Throw an error if we're trying to run this on Linux/Unix
         if ($PSVersionTable.Platform -eq "Unix") {
             Throw "Import-AD: You cannot manage Active Directory from this operating system. Pass a computerName that has access to RSAT / Active Directory PowerShell Modules."
@@ -40,11 +42,11 @@ function Import-AD {
         # Exit if the module is already imported.
         if (Get-Module -Name 'ActiveDirectory' -ErrorAction SilentlyContinue) {
             Write-Verbose "Import-AD: PowerShell Module 'ActiveDirectory' was already imported."
-            break
+            $alreadyImported = $true
         }
 
         # Only do all of this work if -InstallModule is present
-        if ($InstallModule) {
+        if ($InstallModule -and (-not $alreadyImported)) {
 
             # Assume WSUS is not enabled
             $wsusActive = $false
@@ -88,51 +90,53 @@ function Import-AD {
 
     Process {
         
-        # Install the module if told to
-        if (-not ($moduleInstallStatus)) {
-            if (-not ($InstallModule)) {
-                Write-Debug "Import-AD: RSAT Tool(s) are not installed. Exiting this script."
-                Throw "Import-AD: PowerShell Module 'ActiveDirectory' is not installed. `nImport-AD: Please install said module or pass switch parameter '-installModules' and run the script again"
-            }
-
-
-            # Verify WSUS is disabled before installing said feature or we'll encounter an error
-            $wsusActive = Get-WSUSStatus -ErrorAction SilentlyContinue
-
-            # Disable WSUS if it's enabled
-            if ($wsusActive) {
-                Write-Debug "Import-AD: WSUS was enabled, disabling now."
-                Disable-WSUS -ErrorAction Stop
-            }
-
-            try {
-
-                # Attempt to install Active Directory PowerShell module via RSAT
-                if ($isServer) {
-                    Write-Verbose "Import-AD: Installing Windows Feature 'RSAT-AD-PowerShell'."
-                    Install-WindowsFeature -Name 'RSAT-AD-PowerShell' -ErrorAction Stop
-                } else {
-                    Write-Verbose "Import-AD: Adding Windows Capability 'Rsat.ActiveDirectory.DS-LDS.Tools*'."
-                    Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools*" -ErrorAction Stop
+        if (-not ($alreadyImported)) {
+            # Install the module if told to
+            if (-not ($moduleInstallStatus)) {
+                if (-not ($InstallModule)) {
+                    Write-Debug "Import-AD: RSAT Tool(s) are not installed. Exiting this script."
+                    Throw "Import-AD: PowerShell Module 'ActiveDirectory' is not installed. `nImport-AD: Please install said module or pass switch parameter '-installModules' and run the script again"
                 }
 
+
+                # Verify WSUS is disabled before installing said feature or we'll encounter an error
+                $wsusActive = Get-WSUSStatus -ErrorAction SilentlyContinue
+
+                # Disable WSUS if it's enabled
+                if ($wsusActive) {
+                    Write-Debug "Import-AD: WSUS was enabled, disabling now."
+                    Disable-WSUS -ErrorAction Stop
+                }
+
+                try {
+
+                    # Attempt to install Active Directory PowerShell module via RSAT
+                    if ($isServer) {
+                        Write-Verbose "Import-AD: Installing Windows Feature 'RSAT-AD-PowerShell'."
+                        Install-WindowsFeature -Name 'RSAT-AD-PowerShell' -ErrorAction Stop
+                    } else {
+                        Write-Verbose "Import-AD: Adding Windows Capability 'Rsat.ActiveDirectory.DS-LDS.Tools*'."
+                        Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools*" -ErrorAction Stop
+                    }
+
+                } catch {
+                    Throw "Import-AD: Failure installing Active Directory RSAT tool due to error $_."
+                }
+
+                # If WSUS was active previously, enable it again
+                if ($wsusActive) {
+                    Write-Debug "Import-AD: As WSUS was active before the install, we'll need to activate it again."
+                    Enable-WSUS -ErrorAction Stop
+                }
+            }
+
+            # Import the Active Directory Module
+            try {
+                Write-Verbose "Import-AD: Importing PowerShell Module 'ActiveDirectory'."
+                Import-module -Name "ActiveDirectory" -Force -ErrorAction Stop
             } catch {
-                Throw "Import-AD: Failure installing Active Directory RSAT tool due to error $_."
+                Throw "Import-AD: Failure importing PowerShell Module 'ActiveDirectory' due to error $_."
             }
-
-            # If WSUS was active previously, enable it again
-            if ($wsusActive) {
-                Write-Debug "Import-AD: As WSUS was active before the install, we'll need to activate it again."
-                Enable-WSUS -ErrorAction Stop
-            }
-        }
-
-        # Import the Active Directory Module
-        try {
-            Write-Verbose "Import-NameIT: Importing PowerShell Module 'ActiveDirectory'."
-            Import-module -Name "ActiveDirectory" -Force -ErrorAction Stop
-        } catch {
-            Throw "Import-AD: Failure importing PowerShell Module 'ActiveDirectory' due to error $_."
         }
     }
 }

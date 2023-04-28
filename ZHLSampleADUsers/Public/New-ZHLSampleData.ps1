@@ -57,7 +57,7 @@ function New-ZHLSampleData {
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
         [ValidateNotNullOrEmpty()]
-        [ADOrganizationalUnit]$OUs,
+        [Microsoft.ActiveDirectory.Management.ADOrganizationalUnit]$OUs,
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]
@@ -97,7 +97,7 @@ function New-ZHLSampleData {
 
         #region Add SamAccountName, OU, Description, and Email to each Person
         Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
-        $data = Invoke-Generate -Count $Count -Template $Template -AsPSObject -ErrorAction stop
+        $data = Invoke-Generate -Count $Count -Template $Template -AsPSObject -ErrorAction Stop
 
         Write-Debug "New-ZHLSampleData: Addding SamAccountName, OU, Description, and Email to our sample data..."
         $dataModified = foreach ($person in $data) {
