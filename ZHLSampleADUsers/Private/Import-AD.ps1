@@ -56,7 +56,7 @@ function Import-AD {
 
             Write-Debug "Import-AD: -InstallModule was present. Determining which Operating System we're running."
             # Determine the type of system we're running this script on
-            $computerInfo = Get-CimInstance ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Caption
+            $computerInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Caption
 
             if ($null -eq $computerInfo -or $computerInfo -eq "") {
                 Throw "Import-AD: This operating system is not supported."

@@ -57,7 +57,7 @@ function New-ZHLSampleData {
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
         [ValidateNotNullOrEmpty()]
-        [Microsoft.ActiveDirectory.Management.ADOrganizationalUnit]$OUs,
+        [Object[]]$OUs,
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]

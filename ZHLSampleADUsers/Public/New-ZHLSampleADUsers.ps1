@@ -124,7 +124,7 @@ function New-ZHLSampleADUsers {
             ValueFromRemainingArguments,
             ParameterSetName="ProvidedOUs")]
         [Alias("Identity")]
-        [Microsoft.ActiveDirectory.Management.ADOrganizationalUnit]$OUs,
+        [Object[]]$OUs,
 
         [parameter(Mandatory,
             ValueFromPipelineByPropertyName,
@@ -141,7 +141,7 @@ function New-ZHLSampleADUsers {
             ValueFromPipelineByPropertyName,
             ValueFromRemainingArguments)]
             [ValidateSet("Base", 0, "OneLevel", 1, "Subtree", 2)]
-        [Microsoft.ActiveDirectory.Management.ADSearchScope]$SearchScope,
+        [string]$SearchScope,
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]
@@ -204,16 +204,13 @@ function New-ZHLSampleADUsers {
         # Stop the script if the user isn't running as root
         if ($PSVersionTable.Platform -eq "Unix") {
             if ($(whoami) -ne "root") {
-                Write-Warning "You must run this script as root, stopping."
-                exit $exitcode_NotRoot
+                Throw "ErrorCode $exitcode_NotRoot - You must run this script as root, stopping."
             }
 
             # If remote connection is NOT SSH, stop script,
             if ($null -eq $Session) {
                 if (-not $DryRun) {
-                    Write-Warning "New-ZHLSampleADUsers: You cannot run this script locally on Linux. You may run it on Linux if you create a PSSession and pass..."
-                    Write-Warning "New-ZHLSampleADUsers: parameter 'Session'."
-                    exit $exitcode_CannotRunOnLinux
+                    Throw "ErrorCode $exitcode_CannotRunOnLinux - You cannot run this script locally on Linux. You may run it on Linux if you create a PSSession and pass parameter 'Session'."
                 }
                 Write-Warning "New-ZHLSampleADUsers: You MUST pass 'Session' onto this script if you want to run this script on Linux."
             }
@@ -237,11 +234,11 @@ function New-ZHLSampleADUsers {
                     }
                     
                 } catch {
-                    Write-Warning "New-ZHLSampleADUsers: Failed installing/importing PowerShell module 'ActiveDirectory' due to error $_"
                     # Stop the script if this is NOT a dryrun
                     if (-not $DryRun) {
-                        exit $exitcode_FailImportLocalADModule
+                        Throw "ErrorCode $exitcode_FailImportLocalADModule - Failed installing/importing PowerShell module 'ActiveDirectory' due to error $_"
                     }
+                    Write-Warning "New-ZHLSampleADUsers: Failed installing/importing PowerShell module 'ActiveDirectory' due to error $_"
                 }
             }
         }
@@ -253,7 +250,8 @@ function New-ZHLSampleADUsers {
             # Build the parameter splat for Get-ADOrganizationalUnit!
             # This will return true if we're running on a Windows System but want to use psremoting
             if (-not ($PSBoundParameters.ContainsKey('Session')) -and $PSVersionTable.Platform -ne "Unix") {
-                if ($Server -notmatch $(hostname)) {
+
+                if ($Server -notmatch $(hostname) -and $Server -ne 'localhost' -and $null -ne $Server -and $Server -ne "") {
                     Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
                     $getOUSplatter.Add('Server', $Server)
                 }
@@ -335,11 +333,10 @@ function New-ZHLSampleADUsers {
             
         } catch {
             if (-not $DryRun) {
-                Write-Warning "New-ZHLSampleADUsers: Failure gathering OUs from AD due to error $_."
-                exit $exitcode_FailGatherOUs
+                Throw "ErrorCode $exitcode_FailGatherOUs - Failure gathering OUs from AD due to error $_."
             }
-            Write-Debug "New-ZHLSampleADUsers: Received an error gathering Organizational Units from AD. Error was $_."
-            Write-Debug "New-ZHLSampleADUsers: As this is a -DryRun, continue."
+            Write-Warning "New-ZHLSampleADUsers: Received an error gathering Organizational Units from AD. Error was $_."
+            Write-Warning "New-ZHLSampleADUsers: As this is a -DryRun, continue."
         }
         #endregion
 
@@ -367,12 +364,10 @@ function New-ZHLSampleADUsers {
 
             # Check if we have 'something'
             if ($null -eq $sampleData -or $sampleData -eq "") {
-                Write-Warning "New-ZHLSampleADUsers: Sample Data returned empty somehow."
-                exit $exitcode_SampleDataEmpty
+                Throw "ErrorCode $exitcode_SampleDataEmpty - Sample Data returned empty somehow."
             }
         } catch {
-            Write-Warning "New-ZHLSampleADUsers: Failure generating sample data due to error $_."
-            exit $exitcode_FailGenerateSampleData
+            Throw "ErrorCode $exitcode_FailGenerateSampleData - Failure generating sample data due to error $_."
         }
         #endregion
 
@@ -417,8 +412,7 @@ function New-ZHLSampleADUsers {
                     } -ErrorAction Stop
                 }
             } catch {
-                Write-Warning "New-ZHLSampleADUsers: Failure adding users to Active Directory due to error $_."
-                exit $exitcode_FailAddingADUsers
+                Throw "ErrorCode $exitcode_FailAddingADUsers - Failure adding users to Active Directory due to error $_."
             }
         }
         #endregion
@@ -426,12 +420,18 @@ function New-ZHLSampleADUsers {
         #region Export to CSV
         if ($ExportCSV) {
             Write-Verbose "New-ZHLSampleADUsers: Exporting sample data to location $ExportCSV."
-            $sampleData | Export-Csv -Path $ExportCSV -Force -ErrorAction SilentlyContinue
+            try {
+                $sampleData | Export-Csv -Path $ExportCSV -Force -ErrorAction Stop
+            } catch {
+                Write-Warning "New-ZHLSampleADUsers: Failure exporting to CSV due to error $_."
+            }
+            
         }
         #endregion
 
-        #region Output data if -DryRun or -PassThru
-        if ($DryRun -or (-not $DryRun -and $Passthru)) {
+        #region Output data if -PassThru
+        if ($Passthru) {
+            Write-Debug "New-ZHLSampleADUsers: Output generated Active Directory user data to pipeline."
             return $sampleData
         }
         #endregion
