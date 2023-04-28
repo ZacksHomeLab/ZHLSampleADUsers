@@ -23,120 +23,133 @@
 
     The above example will generate 50 sample data users for domain 'zackshomelab.com'. Once generated, this script will randomize the
     provided OUs for each user. Once that's complete, the script will retrieve the Unique individuals from said data (there's a chance for duplicates).
+.INPUTS
+    ADOrganizationalUnit
+.OUTPUTS
+    PSCustomObject
 .NOTES
     Author - Zack Flowers
 .LINK
     GitHub - https://github.com/ZacksHomeLab
 #>
-[cmdletbinding()]
-param (
-    [parameter(Mandatory,
-        Position=0)]
-        [ValidateScript({$_ -gt 0})]
-    [int]$Count,
+function New-ZHLSampleData {
+    [cmdletbinding()]
+    param (
+        [parameter(Mandatory,
+            Position=0,
+            ValueFromPipelineByPropertyName)]
+            [ValidateScript({$_ -gt 0})]
+        [int]$Count,
 
-    [parameter(Mandatory,
-        Position=1)]
+        [parameter(Mandatory,
+            Position=1,
+            ValueFromPipelineByPropertyName)]
+            [ValidateNotNullOrEmpty()]
+        [string]$Template,
+
+        [parameter(Mandatory,
+            Position=2,
+            ValueFromPipelineByPropertyName)]
+            [ValidateScript({$_ -Match "^(?=.{1,255}$)([a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"})]
+        [string]$Domain,
+
+        [parameter(Mandatory=$false,
+            ValueFromPipelineByPropertyName,
+            ValueFromRemainingArguments)]
         [ValidateNotNullOrEmpty()]
-    [string]$Template,
+        [ADOrganizationalUnit]$OUs,
 
-    [parameter(Mandatory,
-        Position=2)]
-        [ValidateScript({$_ -Match "^(?=.{1,255}$)([a-zA-Z0-9](?:(?:[a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"})]
-    [string]$Domain,
+        [parameter(Mandatory=$false,
+            ValueFromPipelineByPropertyName)]
+        [switch]$InstallModule,
 
-    [parameter(Mandatory=$false)]
-    [ValidateNotNullOrEmpty()]
-    [ADOrganizationalUnit]$OUs,
+        [parameter(Mandatory=$false,
+            ValueFromPipelineByPropertyName)]
+        [switch]$Unique
+    )
 
-    [parameter(Mandatory=$false)]
-    [switch]$InstallModule,
+    Begin {
+        # Create empty PSObjects
+        $data = New-Object -TypeName 'System.Management.Automation.PSObject'
+        $dataModified = New-Object -TypeName 'System.Management.Automation.PSObject'
+        $dataModifiedUnique = New-Object -TypeName 'System.Management.Automation.PSObject'
 
-    [parameter(Mandatory=$false)]
-    [switch]$Unique
-)
-
-Begin {
-    # Create empty PSObjects
-    $data = New-Object -TypeName 'System.Management.Automation.PSObject'
-    $dataModified = New-Object -TypeName 'System.Management.Automation.PSObject'
-    $dataModifiedUnique = New-Object -TypeName 'System.Management.Automation.PSObject'
-
-    
-    $email = $null
-    $sAMAccountName = $null
-    $oU = $null
-}
-
-Process {
-    #region Import PowerShell Module 'NameIT'
-    try {
-        if ($InstallModule) {
-            Write-Debug "New-ZHLSampleADUsers: Installing/Importing PowerShell module 'NameIT'."
-            Import-NameIT -InstallModule -ErrorAction Stop
-        } else {
-            Write-Debug "New-ZHLSampleADUsers: Importing PowerShell module 'NameIT'."
-            Import-NameIT -ErrorAction Stop
-        }
-    } catch {
-        Throw "Failed installing/importing PowerShell module 'NameIT' due to error $_"
+        
+        $email = $null
+        $sAMAccountName = $null
+        $oU = $null
     }
-    #endregion
 
-    #region Add SamAccountName, OU, Description, and Email to each Person
-    Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
-    $data = Invoke-Generate -Count $Count -Template $Template -AsPSObject -ErrorAction stop
-
-    Write-Debug "New-ZHLSampleData: Addding SamAccountName, OU, Description, and Email to our sample data..."
-    $dataModified = foreach ($person in $data) {
-        Write-Debug "New-ZHLSampleData: Current Person: $($Person.person)"
-        $null = $email
-        $null = $sAMAccountName
-        $null = $oU
-
-        # Create the SAMAccountName for the user (e.g., john.smith)
-        $sAMAccountName = $(($person.person -split ' ') -join '.').ToLower()
-
-        # Create the Email address for the user
-        $email = $("$sAMAccountName@$Domain").ToLower()
-
-        # Select a random OU to place the user. Otherwise, leave it blank
-        if ($null -ne $OUs -and $OUs -ne "") {
-            $OU = Get-Random -InputObject $OUs | Select-Object -ExpandProperty DistinguishedName
-            if ($null -ne $OUs -and $OUs -ne "") {
-                $person | Add-Member -MemberType NoteProperty -Name 'OU' -Value $OU -Force
+    Process {
+        #region Import PowerShell Module 'NameIT'
+        try {
+            if ($InstallModule) {
+                Write-Debug "New-ZHLSampleADUsers: Installing/Importing PowerShell module 'NameIT'."
+                Import-NameIT -InstallModule -ErrorAction Stop
+            } else {
+                Write-Debug "New-ZHLSampleADUsers: Importing PowerShell module 'NameIT'."
+                Import-NameIT -ErrorAction Stop
             }
-        } else {
-            $person | Add-Member -MemberType NoteProperty -Name 'OU' -Value "" -Force
+        } catch {
+            Throw "Failed installing/importing PowerShell module 'NameIT' due to error $_"
         }
+        #endregion
 
-        # Add SAMAccountName to our Person
-        $person | Add-Member -MemberType NoteProperty -Name 'SAMAccountName' -Value $samAccountName -Force
+        #region Add SamAccountName, OU, Description, and Email to each Person
+        Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
+        $data = Invoke-Generate -Count $Count -Template $Template -AsPSObject -ErrorAction stop
 
-        # Add Email to our Person
-        $person | Add-Member -MemberType NoteProperty -Name 'Email' -Value $email -Force
+        Write-Debug "New-ZHLSampleData: Addding SamAccountName, OU, Description, and Email to our sample data..."
+        $dataModified = foreach ($person in $data) {
+            Write-Debug "New-ZHLSampleData: Current Person: $($Person.person)"
+            $null = $email
+            $null = $sAMAccountName
+            $null = $oU
 
-        # Add a Description to our Person
-        $person | Add-Member -MemberType NoteProperty -Name 'Description' -Value "New-ZHLSampleADUsers_dont_remove" -Force
+            # Create the SAMAccountName for the user (e.g., john.smith)
+            $sAMAccountName = $(($person.person -split ' ') -join '.').ToLower()
 
-        # Store Person into dataModified
-        $person
-    }
-    #endregion
+            # Create the Email address for the user
+            $email = $("$sAMAccountName@$Domain").ToLower()
 
+            # Select a random OU to place the user. Otherwise, leave it blank
+            if ($null -ne $OUs -and $OUs -ne "") {
+                $OU = Get-Random -InputObject $OUs | Select-Object -ExpandProperty DistinguishedName
+                if ($null -ne $OUs -and $OUs -ne "") {
+                    $person | Add-Member -MemberType NoteProperty -Name 'OU' -Value $OU -Force
+                }
+            } else {
+                $person | Add-Member -MemberType NoteProperty -Name 'OU' -Value "" -Force
+            }
 
-    #region If -Unique was provided, filter out potential duplicates
-    if ($Unique) {
-        Write-Debug "New-ZHLSampleData: Filtering data for duplicates..."
-        $dataModifiedUnique = $dataModified | Group-Object -Property 'Email' | Foreach-Object {
-            $_.Group[0]
+            # Add SAMAccountName to our Person
+            $person | Add-Member -MemberType NoteProperty -Name 'SAMAccountName' -Value $samAccountName -Force
+
+            # Add Email to our Person
+            $person | Add-Member -MemberType NoteProperty -Name 'Email' -Value $email -Force
+
+            # Add a Description to our Person
+            $person | Add-Member -MemberType NoteProperty -Name 'Description' -Value "New-ZHLSampleADUsers_dont_remove" -Force
+
+            # Store Person into dataModified
+            $person
         }
+        #endregion
+
+
+        #region If -Unique was provided, filter out potential duplicates
+        if ($Unique) {
+            Write-Debug "New-ZHLSampleData: Filtering data for duplicates..."
+            $dataModifiedUnique = $dataModified | Group-Object -Property 'Email' | Foreach-Object {
+                $_.Group[0]
+            }
+            Write-Debug "New-ZHLSampleData: Finished creating our sample data."
+            return $dataModifiedUnique
+        }
+        #endregion
+
         Write-Debug "New-ZHLSampleData: Finished creating our sample data."
-        return $dataModifiedUnique
+        # Output dataModified into the pipeline
+        return $dataModified
     }
-    #endregion
-
-    Write-Debug "New-ZHLSampleData: Finished creating our sample data."
-    # Output dataModified into the pipeline
-    return $dataModified
 }

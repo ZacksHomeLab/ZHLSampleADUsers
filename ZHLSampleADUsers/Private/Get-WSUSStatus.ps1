@@ -12,17 +12,19 @@
 .OUTPUTS
     System.boolean
 #>
-[cmdletbinding()]
-param()
+function Get-WSUSStatus {
+    [cmdletbinding()]
+    param()
 
-begin {
-    Write-Debug "Get-WSUSStatus: Retrieving Regkey value 'UseWUServer' to determine if WSUS is active or not.."
-    $wsusActive = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "UseWUServer" `
-        -ErrorAction SilentlyContinue | Select-Object -ExpandProperty UseWUServer) -as [bool]
+    begin {
+        Write-Debug "Get-WSUSStatus: Retrieving Regkey value 'UseWUServer' to determine if WSUS is active or not.."
+        $wsusActive = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "UseWUServer" `
+            -ErrorAction SilentlyContinue | Select-Object -ExpandProperty UseWUServer) -as [bool]
 
-    Write-Debug "Get-WSUSStatus: Wsus Enabled = $wsusActive"
-}
+        Write-Debug "Get-WSUSStatus: Wsus Enabled = $wsusActive"
+    }
 
-end {
-    return $wsusActive
+    end {
+        return $wsusActive
+    }
 }
