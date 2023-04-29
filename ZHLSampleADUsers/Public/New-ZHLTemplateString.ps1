@@ -23,7 +23,6 @@ function New-ZHLTemplateString {
         
         # I just needed something simple, I know there's better ways of doing this:
         $sampleDataTemplate += "`nJob=[Job]"
-        $sampleDataTemplate += "`nManager=[Person]"
         $sampleDataTemplate += "`nCompany=[Company]"
         $sampleDataTemplate += "`nAddress=[Address]"
         $sampleDataTemplate += "`nCity=[City]"

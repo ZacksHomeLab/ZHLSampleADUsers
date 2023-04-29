@@ -392,9 +392,9 @@ function New-ZHLSampleADUsers {
                     foreach ($person in $sampleData) {
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
                         New-ADUser @newADUserSplatter -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                            -DisplayName $person.Person -Email $person.Email -Manager $person.Manager -Name $person.Person `
+                            -DisplayName $person.Person -Email $person.Email -Name $person.Person `
                             -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
-                            -OtherAttributes @{'title'=$person.Job;'mail'=$person.Email} -Path $person.OU -ErrorAction Stop
+                            -OtherAttributes @{'title'=$person.Job} -Path $person.OU -ErrorAction Stop
                     }
                 } else {
 
@@ -403,9 +403,9 @@ function New-ZHLSampleADUsers {
                     Invoke-Command -Session $Session -ScriptBlock {
                         foreach ($person in $using:sampleData) {
                             New-ADUser -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                                -DisplayName $person.Person -Email $person.Email -Manager $person.Manager -Name $person.Person `
+                                -DisplayName $person.Person -Email $person.Email -Name $person.Person `
                                 -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
-                                -OtherAttributes @{'title'=$person.Job;'mail'=$person.Email} -Path $person.OU -ErrorAction Stop
+                                -OtherAttributes @{'title'=$person.Job} -Path $person.OU -ErrorAction Stop
                         }
                     } -ErrorAction Stop
                 }
