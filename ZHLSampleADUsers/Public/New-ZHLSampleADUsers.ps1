@@ -222,7 +222,7 @@ function New-ZHLSampleADUsers {
 
         #region Install Active Directory PowerShell Module
         if ($PSVersionTable.Platform -ne "Unix") {
-            if ($Server -match $(hostname) -or $Server -eq 'localhost' -or $null -eq $Server -or $Server -eq "") {
+            if ($PSBoundParameters.ContainsKey('Server') -and ($Server -match $(hostname) -or $Server -eq 'localhost')) {
                 # Install / Import PowerShell module 'ActiveDirectory'
                 try {
                     if ($InstallModule) {
@@ -251,7 +251,7 @@ function New-ZHLSampleADUsers {
             # This will return true if we're running on a Windows System but want to use psremoting
             if (-not ($PSBoundParameters.ContainsKey('Session')) -and $PSVersionTable.Platform -ne "Unix") {
 
-                if ($Server -notmatch $(hostname) -and $Server -ne 'localhost' -and $null -ne $Server -and $Server -ne "") {
+                if ($PSBoundParameters.ContainsKey('Server') -and ($Server -notmatch $(hostname) -and $Server -ne 'localhost')) {
                     Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
                     $getOUSplatter.Add('Server', $Server)
                 }
@@ -379,7 +379,7 @@ function New-ZHLSampleADUsers {
                 if (-not ($PSBoundParameters.ContainsKey('Session'))) {
 
                     # Create credential param splatter for New-ADUser
-                    if ($Server -notmatch $(hostname) -and $Server -ne 'localhost' -and $null -ne $Server -and $Server -eq "") {
+                    if ($PSBoundParameters.ContainsKey('Server') -and ($Server -notmatch $(hostname) -and $Server -ne 'localhost')) {
                         Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
                         $newADUserSplatter.Add('Server', $Server)
                     }
@@ -387,7 +387,7 @@ function New-ZHLSampleADUsers {
                         Write-Debug "New-ZHLSampleADUsers: Adding 'Credential' to our parameter splat"
                         $newADUserSplatter.Add('Credential', $Credential)
                     }
-
+                    Write-Output $($newADUserSplatter.values)
                     # Add Users to Active Directory
                     foreach ($person in $sampleData) {
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
