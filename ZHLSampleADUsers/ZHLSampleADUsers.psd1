@@ -61,10 +61,10 @@
     FunctionsToExport = @('New-ZHLSampleADUsers', 'New-ZHLSampleData', 'New-ZHLTemplateString')
 
     # Cmdlets to export from this module
-    # CmdletsToExport   = @()
+    CmdletsToExport   = @()
 
     # Variables to export from this module
-    # VariablesToExport = '*'
+    VariablesToExport = '*'
 
     # Aliases to export from this module
     # AliasesToExport   = @()
