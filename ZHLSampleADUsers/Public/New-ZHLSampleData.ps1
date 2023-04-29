@@ -97,7 +97,7 @@ function New-ZHLSampleData {
 
         #region Add SamAccountName, OU, Description, and Email to each Person
         Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
-        $data = Invoke-Generate -Count $Count -Template $Template -AsPSObject -ErrorAction Stop
+        $data = Invoke-Generate -Count $Count -Template $Template -Culture en -AsPSObject -ErrorAction Stop
 
         Write-Debug "New-ZHLSampleData: Addding SamAccountName, OU, Description, and Email to our sample data..."
         $dataModified = foreach ($person in $data) {
