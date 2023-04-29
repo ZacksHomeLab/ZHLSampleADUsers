@@ -379,22 +379,20 @@ function New-ZHLSampleADUsers {
                 if (-not ($PSBoundParameters.ContainsKey('Session'))) {
 
                     # Create credential param splatter for New-ADUser
-                    if (-not ($PSBoundParameters.ContainsKey('Session')) -and $runRemote) {
-                        if ($Server -notmatch $(hostname)) {
-                            Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
-                            $newADUserSplatter.Add('Server', $Server)
-                        }
-                        if ($PSBoundParameters.ContainsKey('Credential')) {
-                            Write-Debug "New-ZHLSampleADUsers: Adding 'Credential' to our parameter splat"
-                            $newADUserSplatter.Add('Credential', $Credential)
-                        }
+                    if ($Server -notmatch $(hostname) -and $Server -ne 'localhost' -and $null -ne $Server -and $Server -eq "") {
+                        Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
+                        $newADUserSplatter.Add('Server', $Server)
+                    }
+                    if ($PSBoundParameters.ContainsKey('Credential')) {
+                        Write-Debug "New-ZHLSampleADUsers: Adding 'Credential' to our parameter splat"
+                        $newADUserSplatter.Add('Credential', $Credential)
                     }
 
                     # Add Users to Active Directory
                     foreach ($person in $sampleData) {
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
                         New-ADUser @newADUserSplatter -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                            -DisplayName $person.DisplayName -Email $person.Email -Manager $person.Manager -Name $person.Name `
+                            -DisplayName $person.Person -Email $person.Email -Manager $person.Manager -Name $person.Person `
                             -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
                             -OtherAttributes @{'title'=$person.Job;'mail'=$person.Email} -Path $person.OU -ErrorAction Stop
                     }
@@ -405,7 +403,7 @@ function New-ZHLSampleADUsers {
                     Invoke-Command -Session $Session -ScriptBlock {
                         foreach ($person in $using:sampleData) {
                             New-ADUser -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                                -DisplayName $person.DisplayName -Email $person.Email -Manager $person.Manager -Name $person.Name `
+                                -DisplayName $person.Person -Email $person.Email -Manager $person.Manager -Name $person.Person `
                                 -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
                                 -OtherAttributes @{'title'=$person.Job;'mail'=$person.Email} -Path $person.OU -ErrorAction Stop
                         }
