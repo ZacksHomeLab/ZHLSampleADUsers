@@ -184,7 +184,7 @@ function New-ZHLSampleADUsers {
         $newZHLSampleDataSplatter = @{}
 
         # Create a variable to hold our New-ADUser connection parameters
-        $newADUserSplatter = @{}
+        $newADUserCredentialSplatter = @{}
 
         # Create a variable to hold individual person data
         $person = $null
@@ -363,7 +363,7 @@ function New-ZHLSampleADUsers {
             $sampleData = New-ZHLSampleData @newZHLSampleDataSplatter
 
             # Check if we have 'something'
-            if ($null -eq $sampleData -or $sampleData -eq "") {
+            if ($null -eq $sampleData.Keys) {
                 Throw "ErrorCode $exitcode_SampleDataEmpty - Sample Data returned empty somehow."
             }
         } catch {
@@ -379,22 +379,40 @@ function New-ZHLSampleADUsers {
                 if (-not ($PSBoundParameters.ContainsKey('Session'))) {
 
                     # Create credential param splatter for New-ADUser
-                    if ($PSBoundParameters.ContainsKey('Server') -and ($Server -notmatch $(hostname) -and $Server -ne 'localhost')) {
-                        Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
-                        $newADUserSplatter.Add('Server', $Server)
+                    if ($PSBoundParameters.ContainsKey('Server') -and 
+                        ($Server -notmatch $(hostname) -and $Server -ne 'localhost')) {
+                        
+                            Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
+                            $newADUserCredentialSplatter.Add('Server', $Server)
                     }
                     if ($PSBoundParameters.ContainsKey('Credential')) {
                         Write-Debug "New-ZHLSampleADUsers: Adding 'Credential' to our parameter splat"
-                        $newADUserSplatter.Add('Credential', $Credential)
+                        $newADUserCredentialSplatter.Add('Credential', $Credential)
                     }
-                    Write-Output $($newADUserSplatter.values)
+
                     # Add Users to Active Directory
                     foreach ($person in $sampleData) {
+                        # Reset the parameter splatter
+                        $newADUserSplatter = @{}
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
-                        New-ADUser @newADUserSplatter -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                            -DisplayName $person.Person -Email $person.Email -Name $person.Person `
-                            -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
-                            -OtherAttributes @{'title'=$person.Job} -Path $person.OU -ErrorAction Stop
+                        $newADUserSplatter = @{
+                            'City' = $person.City
+                            'Country' = $person.Country
+                            'Company' = $person.Company
+                            'Description' = $person.Description
+                            'PostalCode' = $person.ZIP
+                            'SamAccountName' = $person.SamAccountName
+                            'State' = $person.State
+                            'OtherAttributes' = @{'title' = $person.Job}
+                            'Path' = $person.OU
+                            'ErrorAction' = 'Stop'
+                        }
+                        # Add the credential splatter onto $newADUserSplatter
+                        if ($null -ne $newADUserCredentialSplatter.Keys) {
+                            $newADUserSplatter += $newADUserCredentialSplatter
+                        }
+                        
+                        New-ADUser @newADUserSplatter
                     }
                 } else {
 
@@ -402,10 +420,25 @@ function New-ZHLSampleADUsers {
                     Write-Debug "New-ZHLSampleADUsers: Attempting to add users to Active Directory via Invoke-Command."
                     Invoke-Command -Session $Session -ScriptBlock {
                         foreach ($person in $using:sampleData) {
-                            New-ADUser -City $person.City -Country $person.Country -Company $person.Company -Description $person.Description `
-                                -DisplayName $person.Person -Email $person.Email -Name $person.Person `
-                                -PostalCode $person.ZIP -SamAccountName $person.SamAccountName -State $person.State `
-                                -OtherAttributes @{'title'=$person.Job} -Path $person.OU -ErrorAction Stop
+
+                            # Create parameter splatter
+                            $newADUserSplatter = @{}
+
+                            # Populate parameter splatter
+                            $newADUserSplatter = @{
+                                'City' = $person.City
+                                'Country' = $person.Country
+                                'Company' = $person.Company
+                                'Description' = $person.Description
+                                'PostalCode' = $person.ZIP
+                                'SamAccountName' = $person.SamAccountName
+                                'State' = $person.State
+                                'OtherAttributes' = @{'title' = $person.Job}
+                                'Path' = $person.OU
+                                'ErrorAction' = 'Stop'
+                            }
+
+                            New-ADUser @newADUserSplatter
                         }
                     } -ErrorAction Stop
                 }

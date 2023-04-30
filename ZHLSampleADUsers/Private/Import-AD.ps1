@@ -56,7 +56,8 @@ function Import-AD {
 
             Write-Debug "Import-AD: -InstallModule was present. Determining which Operating System we're running."
             # Determine the type of system we're running this script on
-            $computerInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Caption
+            $computerInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue | 
+                Select-Object -ExpandProperty Caption
 
             if ($null -eq $computerInfo -or $computerInfo -eq "") {
                 Throw "Import-AD: This operating system is not supported."
@@ -71,8 +72,8 @@ function Import-AD {
                 Write-Debug "Import-AD: The following operating system matches variant 'Server'."
                 Write-Debug "Import-AD: Verifying if Windows Feature 'RSAT-AD-PowerShell' is installed."
 
-                $moduleInstallStatus = (Get-WindowsFeature -Name "RSAT-AD-PowerShell" -ErrorAction SilentlyContinue `
-                    | Select-Object -ExpandProperty Installed) -as [bool]
+                $moduleInstallStatus = (Get-WindowsFeature -Name "RSAT-AD-PowerShell" -ErrorAction SilentlyContinue | 
+                    Select-Object -ExpandProperty Installed) -as [bool]
 
                 
             # We're running a variant of Windows Workstation (e.g., 10/11)
@@ -80,8 +81,8 @@ function Import-AD {
                 Write-Debug "Import-AD: The following operating system matches variant 'Workstation'."
                 Write-Debug "Import-AD: Verifying if Windows Capability 'Rsat.ActiveDirectory.DS-LDS.Tools*' is already installed."
 
-                $moduleInstallStatus = ((Get-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools*" -ErrorAction SilentlyContinue `
-                    | Select-Object -ExpandProperty State) -eq 'Installed') -as [bool]
+                $moduleInstallStatus = ((Get-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools*" -ErrorAction SilentlyContinue | 
+                    Select-Object -ExpandProperty State) -eq 'Installed') -as [bool]
             }
 
             Write-Debug "Import-AD: RSAT Tools installed = $moduleInstallStatus"

@@ -114,7 +114,9 @@ function New-ZHLSampleData {
 
             # Select a random OU to place the user. Otherwise, leave it blank
             if ($null -ne $OUs -and $OUs -ne "") {
+
                 $OU = Get-Random -InputObject $OUs | Select-Object -ExpandProperty DistinguishedName
+
                 if ($null -ne $OUs -and $OUs -ne "") {
                     $person | Add-Member -MemberType NoteProperty -Name 'OU' -Value $OU -Force
                 }
@@ -140,9 +142,10 @@ function New-ZHLSampleData {
         #region If -Unique was provided, filter out potential duplicates
         if ($Unique) {
             Write-Debug "New-ZHLSampleData: Filtering data for duplicates..."
-            $dataModifiedUnique = $dataModified | Group-Object -Property 'Email' | Foreach-Object {
-                $_.Group[0]
-            }
+            $dataModifiedUnique = $dataModified | Group-Object -Property 'Email' | 
+                Foreach-Object {
+                    $_.Group[0]
+                }
             Write-Debug "New-ZHLSampleData: Finished creating our sample data."
             return $dataModifiedUnique
         }
