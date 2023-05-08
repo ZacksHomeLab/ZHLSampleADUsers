@@ -351,9 +351,7 @@ function New-ZHLSampleADUsers {
             if ($null -ne $orgUnits -and $orgUnits -ne "") {
                 $newZHLSampleDataSplatter.Add('OUs', $orgUnits)
             }
-            if ($InstallModule) {
-                $newZHLSampleDataSplatter.Add('InstallModule', $InstallModule)
-            }
+
             $newZHLSampleDataSplatter.Add('Unique', $true)
             $newZHLSampleDataSplatter.Add('ErrorAction', 'Stop')
 
@@ -363,7 +361,7 @@ function New-ZHLSampleADUsers {
             $sampleData = New-ZHLSampleData @newZHLSampleDataSplatter
 
             # Check if we have 'something'
-            if ($null -eq $sampleData.Keys) {
+            if ($null -eq $sampleData -or $sampleData -eq "") {
                 Throw "ErrorCode $exitcode_SampleDataEmpty - Sample Data returned empty somehow."
             }
         } catch {
