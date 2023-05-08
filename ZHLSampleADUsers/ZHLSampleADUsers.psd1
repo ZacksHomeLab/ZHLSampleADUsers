@@ -93,6 +93,8 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.3.0 20230508
+* Created Pester tests for all public functions
 0.2.2 20230508
 * Made New-ZHLTemplateString less of an eye-sore. (i.e., formatting changes)
 0.2.1 20230508
