@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.1.0'
+    ModuleVersion     = '0.3.2'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -13,7 +13,7 @@
     Author            = 'Zack Flowers'
 
     # Company or vendor of this module
-    #CompanyName       = 'ZHL'
+    #CompanyName       = ''
 
     # Copyright statement for this module
     Copyright         = '(c) 2023 Zack Flowers. All rights reserved.'
@@ -93,6 +93,8 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.3.2 20230508
+* Forgot to update module version.
 0.3.1 20230508
 * Added coverage* in .gitignore
 0.3.0 20230508
