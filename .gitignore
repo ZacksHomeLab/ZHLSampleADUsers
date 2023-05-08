@@ -61,3 +61,6 @@ Icon?
 .TemporaryItems
 .Trashes
 .VolumeIcon.icns
+
+# Pester files
+coverage*
