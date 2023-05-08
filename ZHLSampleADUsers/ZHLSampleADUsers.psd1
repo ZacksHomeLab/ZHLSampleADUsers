@@ -93,6 +93,8 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.2.1 20230508
+* Removed -InstallModule from New-ZHLSampleData
 0.2.0 20230508
 * Removed InstallModule from New-ZHLSampleData function call
 * Fixed an issue for validating data from New-ZHLSampleData

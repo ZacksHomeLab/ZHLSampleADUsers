@@ -13,8 +13,6 @@
     The Active Directory Organizational Units.
 .PARAMETER Unique
     Use this switch if you want to retrieve unique values as there's a chance to get duplicates.
-.PARAMETER InstallModule
-    Use this switch if you want to install PowerShell module 'NameIT'.
 .EXAMPLE
     $OUs = (Get-ADOrganizationalUnit -Filter "Name -ne 'Domain Controllers'")
     $Template = (New-ZHLTemplateString)
@@ -61,10 +59,6 @@ function New-ZHLSampleData {
 
         [parameter(Mandatory=$false,
             ValueFromPipelineByPropertyName)]
-        [switch]$InstallModule,
-
-        [parameter(Mandatory=$false,
-            ValueFromPipelineByPropertyName)]
         [switch]$Unique
     )
 
@@ -81,19 +75,6 @@ function New-ZHLSampleData {
     }
 
     Process {
-        #region Import PowerShell Module 'NameIT'
-        try {
-            if ($InstallModule) {
-                Write-Debug "New-ZHLSampleADUsers: Installing/Importing PowerShell module 'NameIT'."
-                Import-NameIT -InstallModule -ErrorAction Stop
-            } else {
-                Write-Debug "New-ZHLSampleADUsers: Importing PowerShell module 'NameIT'."
-                Import-NameIT -ErrorAction Stop
-            }
-        } catch {
-            Throw "Failed installing/importing PowerShell module 'NameIT' due to error $_"
-        }
-        #endregion
 
         #region Add SamAccountName, OU, Description, and Email to each Person
         Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
