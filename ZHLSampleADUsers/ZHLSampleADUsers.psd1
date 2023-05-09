@@ -19,7 +19,7 @@
     Copyright         = '(c) 2023 Zack Flowers. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description       = 'Generates sample Active Directory users using PowerShell module NameIT'
+    Description       = 'Creates a number of Active Directory accounts with random properties.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     # PowerShellVersion = ''
