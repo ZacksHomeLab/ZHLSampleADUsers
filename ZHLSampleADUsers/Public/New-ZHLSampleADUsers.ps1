@@ -113,7 +113,6 @@
         * Uses local credentials to access Active Directory
         * Adds the 5 random users as active account to Active Directory 
 .EXAMPLE
-
     $session = New-PSSession -ComputerName 'dc01.zackshomelab.com' -Credential (Get-Credential) -Name 'DC01'
 
     $OUs = Invoke-Command -Session $session -ScriptBlock { 
@@ -139,11 +138,26 @@
         * Generates 5 random passwords for said users as -Enabled was added
         * Uses the provided session to remote into DC01 to add the users in Active Directory
         * Passes the generated user data to the provided path.
+.EXAMPLE
+    $params = @{
+        Domain = 'zackshomelab.com'
+        Server = 'dc01.zackshomelab.com'
+        Credential = (Get-Credential)
+        Count = 5
+        Enabled = $True
+    }
+
+    New-ZHLSampleADUsers @params
+
+    The above example will accomplish the following:
+        * Generates 5 random users that have a domain of zackshomelab.com
+        * Generates 5 random passwords for said users as -Enabled was added
+        * Connects to server 'dc01.zackshomelab.com' with the provided credentials to retrieve Organizational Units
+        * Connects to server 'dc01.zackshomelab.com' to add the users in Active Directory
 .NOTES
     Author - Zack Flowers
 .LINK
     GitHub - https://github.com/ZacksHomeLab
-    NameIT Module - https://github.com/dfinke/NameIT
 #>
 #requires -RunAsAdministrator
 function New-ZHLSampleADUsers {
