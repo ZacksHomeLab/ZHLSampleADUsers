@@ -72,6 +72,8 @@ function New-ZHLSampleData {
         $email = $null
         $sAMAccountName = $null
         $oU = $null
+        $firstName = $null
+        $lastName = $null
     }
 
     Process {
@@ -85,9 +87,15 @@ function New-ZHLSampleData {
             $null = $email
             $null = $sAMAccountName
             $null = $oU
+            $null = $firstName
+            $null = $lastName
 
             # Create the SAMAccountName for the user (e.g., john.smith)
             $sAMAccountName = $(($person.person -split ' ') -join '.').ToLower()
+
+            # Split the name of the person into First Name / Last Name
+            $firstName = (Get-Culture).TextInfo.ToTitleCase($($person.Person).Split(' ')[0])
+            $lastName = (Get-Culture).TextInfo.ToTitleCase($($person.Person).Split(' ')[1])
 
             # Create the Email address for the user
             $email = $("$sAMAccountName@$Domain").ToLower()
@@ -113,6 +121,12 @@ function New-ZHLSampleData {
             # Add a Description to our Person
             $person | Add-Member -MemberType NoteProperty -Name 'Description' -Value "New-ZHLSampleADUsers_dont_remove" -Force
 
+            # Add First Name
+            $person | Add-Member -MemberType NoteProperty -Name 'FirstName' -Value $firstName -Force
+
+            # Add Last Name
+            $person | Add-Member -MemberType NoteProperty -Name 'LastName' -Value $lastName -Force
+            
             # Store Person into dataModified
             $person
         }

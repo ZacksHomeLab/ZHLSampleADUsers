@@ -463,16 +463,22 @@ function New-ZHLSampleADUsers {
                         $newADUserSplatter = @{}
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
                         $newADUserSplatter = @{
-                            'Name' = $person.Person
                             'City' = $person.City
-                            'Country' = $person.Country
                             'Company' = $person.Company
+                            'Country' = $person.Country
                             'Description' = $person.Description
+                            'DisplayName' = $person.Person
+                            'EmailAddress' = $person.Email
+                            'GivenName' = $person.FirstName
+                            'Name' = $person.Person
+                            'OtherAttributes' = @{'title' = $person.Job}
+                            'Path' = $person.OU
                             'PostalCode' = $person.ZIP
                             'SamAccountName' = $person.SamAccountName
                             'State' = $person.State
-                            'OtherAttributes' = @{'title' = $person.Job}
-                            'Path' = $person.OU
+                            'StreetAddress' = $person.Address
+                            'SurName' = $person.LastName
+                            'UserPrincipalName' = $person.Email
                             'ErrorAction' = 'Stop'
                         }
                         # Add the credential splatter onto $newADUserSplatter
@@ -514,16 +520,22 @@ function New-ZHLSampleADUsers {
 
                             # Populate parameter splatter
                             $newADUserSplatter = @{
-                                'Name' = $person.Person
                                 'City' = $person.City
-                                'Country' = $person.Country
                                 'Company' = $person.Company
+                                'Country' = $person.Country
                                 'Description' = $person.Description
+                                'DisplayName' = $person.Person
+                                'EmailAddress' = $person.Email
+                                'GivenName' = $person.FirstName
+                                'Name' = $person.Person
+                                'OtherAttributes' = @{'title' = $person.Job}
+                                'Path' = $person.OU
                                 'PostalCode' = $person.ZIP
                                 'SamAccountName' = $person.SamAccountName
                                 'State' = $person.State
-                                'OtherAttributes' = @{'title' = $person.Job}
-                                'Path' = $person.OU
+                                'StreetAddress' = $person.Address
+                                'SurName' = $person.LastName
+                                'UserPrincipalName' = $person.Email
                                 'ErrorAction' = 'Stop'
                             }
 

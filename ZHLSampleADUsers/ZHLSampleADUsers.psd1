@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.5.0'
+    ModuleVersion     = '0.6.0'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -93,9 +93,18 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.6.0 20230508
+* Added the following Active Directory Properties to users:
+    - Added GivenName (First Name)
+    - Added SurName (Last Name)
+    - Added UPN (UserPrincipalName)
+    - Added Email
+    - Fixed Country from 'USA' to 'US'
+    - Added StreetAddress
+    - Added DisplayName
 0.5.0 20230508
 * Added Send-Function.ps1, which loads functions onto remote sessions
-* Added support for $Enabled accounts to be added via PSSession.
+* Added support for Enabled accounts to be added via PSSession.
 0.4.2 20230508
 * Added another example to notes
 0.4.1 20230508

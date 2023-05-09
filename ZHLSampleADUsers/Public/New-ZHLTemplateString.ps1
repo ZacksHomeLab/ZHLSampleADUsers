@@ -24,6 +24,6 @@ function New-ZHLTemplateString {
             + "`nCity=[City]" `
             + "`nZIP=[PostalCode]" `
             + "`nState=[State]" `
-            + "`nCountry=USA"
+            + "`nCountry=US"
     }
 }
