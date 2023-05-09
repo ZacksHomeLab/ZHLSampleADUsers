@@ -17,6 +17,9 @@
     The PSSession of the machine that has access to Active Directory. Active Directory commands will run from said session.
 .PARAMETER OUs
     The Active Directory Organizational Units to place said generated Users in. The script will randomize the provided OUs.
+
+    NOTE: If you provide a 'Session' that connects to your server that has access to Active Directory, it will retrieve
+    the Organizational Units from said server using the provided Session.
 .PARAMETER Enabled
     Specifies if an account is enabled. An enabled account requires a password. 
     
@@ -94,7 +97,48 @@
 
     If the acting credentials do not have directory-level permission to perform the task, Active Directory module for Windows PowerShell returns a terminating error.
 .EXAMPLE
-    New-ZHLSampleADUsers -Domain 'zackshomelab.com' -Count 5 -InstallModule -DryRun
+    New-ZHLSampleADUsers -Domain 'zackshomelab.com' -Count 5 -DryRun -Passthru
+
+    The above example will accomplish the following:
+        * Generate 5 random users that have a domain of zackshomelab.com
+        * Skip adding the person to Active Directory as -DryRun was added.
+        * Output the generated users' to console
+
+.EXAMPLE
+    New-ZHLSampleADUsers -Domain 'zackshomelab.com' -count 5 -Enabled
+
+    The above example will accomplish the following:
+        * Generate 5 random users that have a domain of zackshomelab.com
+        * Generate 5 random passwords for said users as -Enabled was added
+        * Uses local credentials to access Active Directory
+        * Adds the 5 random users as active account to Active Directory 
+.EXAMPLE
+
+    $session = New-PSSession -ComputerName 'dc01.zackshomelab.com' -Credential (Get-Credential) -Name 'DC01'
+
+    $OUs = Invoke-Command -Session $session -ScriptBlock { 
+        Import-Module -Name 'ActiveDirectory' -ErrorAction SilentlyContinue
+        Get-ADOrganizationalUnit -Filter "Name -ne 'Domain Controllers'"
+    }
+
+    $params = @{
+        Domain = 'zackshomelab.com'
+        Count = 5
+        Enabled = $True
+        OUs = $OUs
+        Session = $session
+        ExportCSV = "$($ENV:TEMP)\ad_users.csv)"
+    }
+
+    New-ZHLSampleADUsers @params
+
+    The above example will accomplish the following:
+        * Creates a PSSession connecting to dc01.zackshomelab.com
+        * Retrieve all Organizational Units that do NOT have a name like 'Domain Controllers'
+        * Generates 5 random users that have a domain of zackshomelab.com
+        * Generates 5 random passwords for said users as -Enabled was added
+        * Uses the provided session to remote into DC01 to add the users in Active Directory
+        * Passes the generated user data to the provided path.
 .NOTES
     Author - Zack Flowers
 .LINK
@@ -472,7 +516,7 @@ function New-ZHLSampleADUsers {
         if ($ExportCSV) {
             Write-Verbose "New-ZHLSampleADUsers: Exporting sample data to location $ExportCSV."
             try {
-                $sampleData | Export-Csv -Path $ExportCSV -Force -ErrorAction Stop
+                $sampleData | Export-Csv -Path $ExportCSV -Append -Force -ErrorAction Stop
             } catch {
                 Write-Warning "New-ZHLSampleADUsers: Failure exporting to CSV due to error $_."
             }
