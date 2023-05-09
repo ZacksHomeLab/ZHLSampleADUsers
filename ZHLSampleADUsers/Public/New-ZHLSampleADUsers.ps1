@@ -270,6 +270,7 @@ function New-ZHLSampleADUsers {
         $exitcode_SampleDataEmpty = 14
         $exitcode_FailGatherOUs = 15
         $exitcode_FailAddingADUsers = 16
+        $exitcode_FailSendFunction = 17
         #endregion
 
         #region Pre-Checks
@@ -493,6 +494,16 @@ function New-ZHLSampleADUsers {
                     }
                 } else {
 
+                    # If $Enabled is true, New-RandomPassword must be sent over to the remote session so that the script can access it
+                    if ($Enabled) {
+                        try {
+                            Write-Verbose "New-ZHLSampleADUsers: Sending function New-RandomPassword to remote session..."
+                            Send-Function -Functions "New-RandomPassword" -Session $Session -ErrorAction Stop
+                        } catch {
+                            Throw "ErrorCode $exitcode_FailSendFunction - Failure sending function to remote session due to error $_."
+                        }
+                    }
+                    
                     # Add Users to Active Directory via Invoke-Command
                     Write-Verbose "New-ZHLSampleADUsers: Attempting to add users to Active Directory via Invoke-Command."
                     Invoke-Command -Session $Session -ScriptBlock {
@@ -516,6 +527,16 @@ function New-ZHLSampleADUsers {
                                 'ErrorAction' = 'Stop'
                             }
 
+                            # If $Enabled is true, we'll need to create a password for the user account
+                            if ($using:Enabled) {
+                                $newADUserSplatter.Add('Enabled', $true)
+                                # Reset accountPassword just in case
+                                $accountPassword = $null
+
+                                # Generate a random password for said individual
+                                $accountPassword = (New-RandomPassword -length 40)
+                                $newADUserSplatter.Add('AccountPassword', ($accountPassword | ConvertTo-SecureString -AsPlainText -Force))
+                            }
                             New-ADUser @newADUserSplatter
                         }
                     } -ErrorAction Stop
