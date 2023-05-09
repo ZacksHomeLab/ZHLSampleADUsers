@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.3.2'
+    ModuleVersion     = '0.3.3'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -93,6 +93,9 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.3.3 20230508
+* Removed Debug messages in New-ZHLSampleData and modified variable dataModifiedUnique
+* Added a condition to run -Unique in New-ZHLSampleData only if Count is greater than 1
 0.3.2 20230508
 * Forgot to update module version.
 0.3.1 20230508

@@ -77,10 +77,9 @@ function New-ZHLSampleData {
     Process {
 
         #region Add SamAccountName, OU, Description, and Email to each Person
-        Write-Debug "New-ZHLSampleData: Begin generating $Count persons using template $Template."
+        Write-Debug "New-ZHLSampleData: Begin generating $Count person(s) using template $Template."
         $data = Invoke-Generate -Count $Count -Template $Template -Culture en -AsPSObject -ErrorAction Stop
 
-        Write-Debug "New-ZHLSampleData: Addding SamAccountName, OU, Description, and Email to our sample data..."
         $dataModified = foreach ($person in $data) {
             Write-Debug "New-ZHLSampleData: Current Person: $($Person.person)"
             $null = $email
@@ -121,18 +120,17 @@ function New-ZHLSampleData {
 
 
         #region If -Unique was provided, filter out potential duplicates
-        if ($Unique) {
+        if ($Unique -and $Count -gt 1) {
             Write-Debug "New-ZHLSampleData: Filtering data for duplicates..."
-            $dataModifiedUnique = $dataModified | Group-Object -Property 'Email' | 
-                Foreach-Object {
-                    $_.Group[0]
-                }
-            Write-Debug "New-ZHLSampleData: Finished creating our sample data."
+            $dataModifiedUnique = $dataModified |
+                Group-Object -Property 'Email' |
+                    Foreach-Object {
+                        $_.Group[0]
+                    }
             return $dataModifiedUnique
         }
         #endregion
 
-        Write-Debug "New-ZHLSampleData: Finished creating our sample data."
         # Output dataModified into the pipeline
         return $dataModified
     }
