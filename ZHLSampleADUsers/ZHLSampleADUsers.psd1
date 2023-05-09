@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.6.1'
+    ModuleVersion     = '0.6.2'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -93,6 +93,9 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.6.2 20230508
+* Added README.md
+* Modified Examples
 0.6.1 20230508
 * Updated Pester unit tests
 0.6.0 20230508

@@ -100,9 +100,11 @@
     New-ZHLSampleADUsers -Domain 'zackshomelab.com' -Count 5 -DryRun -Passthru
 
     The above example will accomplish the following:
-        * Generate 5 random users that have a domain of zackshomelab.com
-        * Skip adding the person to Active Directory as -DryRun was added.
-        * Output the generated users' to console
+        * As -DryRun was provided, this will simulate a production run but will NOT add the users to Active Directory.
+        * Verify our dependencies are installed / imported
+        * Verify we can connect to Active Directory with local credentials, provided credentials, or provided PSSession.
+        * Generates 5 random users that have a domain of zackshomelab.com
+        * Output said generated data to console
 
 .EXAMPLE
     New-ZHLSampleADUsers -Domain 'zackshomelab.com' -count 5 -Enabled
@@ -111,7 +113,8 @@
         * Generate 5 random users that have a domain of zackshomelab.com
         * Generate 5 random passwords for said users as -Enabled was added
         * Uses local credentials to access Active Directory
-        * Adds the 5 random users as active account to Active Directory 
+        * Retrieve the Organizational Units from Active Directory using local credentials
+        * Adds 5 active users in various Organizational Units within Active Directory
 .EXAMPLE
     $session = New-PSSession -ComputerName 'dc01.zackshomelab.com' -Credential (Get-Credential) -Name 'DC01'
 
@@ -126,18 +129,17 @@
         Enabled = $True
         OUs = $OUs
         Session = $session
-        ExportCSV = "$($ENV:TEMP)\ad_users.csv)"
+        ExportCSV = "$($ENV:TEMP)\ad_users.csv"
     }
 
     New-ZHLSampleADUsers @params
 
     The above example will accomplish the following:
         * Creates a PSSession connecting to dc01.zackshomelab.com
-        * Retrieve all Organizational Units that do NOT have a name like 'Domain Controllers'
+        * Uses the provided PSSession to retrieve all Organizational Units that do NOT have a name like 'Domain Controllers'
         * Generates 5 random users that have a domain of zackshomelab.com
-        * Generates 5 random passwords for said users as -Enabled was added
-        * Uses the provided session to remote into DC01 to add the users in Active Directory
-        * Passes the generated user data to the provided path.
+        * Remotes into the provided PSSession to add the 5 users in Active Directory. As -Enabled was present, this will set the users' as active, which means they will have passwords affiliated with their accounts. 
+        * Exports the generated users' data to the provided path in CSV format
 .EXAMPLE
     $params = @{
         Domain = 'zackshomelab.com'
