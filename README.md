@@ -1,6 +1,8 @@
 # ZHLSampleADUsers
 
-The objective of this module is to be able to generate random accounts in Active Directory to simulate a 'real-world' scenario. This is handy if you need a lot of users to test an implementation of some sort. For example, let's say you wanted to implement Azure AD Connect but wanted to test in a test environment. However, in order to go through the 'gotchas', you'll need a few accounts to simulate said migration.
+The objective of this module is to create Active Directory users with random properties.
+
+This module is useful if you need to create dozens or even hundreds of accounts for an implementation of some sort.
 
 # Installation
 
