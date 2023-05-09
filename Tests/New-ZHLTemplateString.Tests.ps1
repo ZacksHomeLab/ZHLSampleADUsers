@@ -44,7 +44,7 @@ Describe "Function New-ZHLTemplateString" -Tag "Unit" {
             + "`nCity=[City]" `
             + "`nZIP=[PostalCode]" `
             + "`nState=[State]" `
-            + "`nCountry=USA"
+            + "`nCountry=US"
 
 
         # Act 

@@ -99,7 +99,7 @@ Describe "Function New-ZHLSampleADUsers" -Tag "Unit" {
             $results.City | Should -Not -BeNullOrEmpty
 
             # The person should contain a country named USA
-            $results.Country | Should -BeExactly "USA"
+            $results.Country | Should -BeExactly "US"
 
             # The person should contain this description
             $results.Description | Should -BeExactly "New-ZHLSampleADUsers_dont_remove"
@@ -109,8 +109,14 @@ Describe "Function New-ZHLSampleADUsers" -Tag "Unit" {
             # The person's email should contain $domain
             $results.Email | Should -Match $domain
 
+            # The person should contain a First Name
+            $results.FirstName | Should -Not -BeNullOrEmpty
+
             # The person should contain a job
             $results.Job | Should -Not -BeNullOrEmpty
+
+            # The person should contain a Last Name
+            $results.LastName | Should -Not -BeNullOrEmpty
 
             # The person should belong to an OU
             $results.OU | Should -BeIn @("OU=Test,OU=Azure,DC=zackshomelab,DC=com", "OU=Azure,DC=zackshomelab,DC=com", "OU=IT,OU=Azure,DC=zackshomelab,DC=com")
@@ -169,7 +175,7 @@ Describe "Function New-ZHLSampleADUsers" -Tag "Unit" {
             $getData.City | Should -Not -BeNullOrEmpty
 
             # The person should contain a country named USA
-            $getData.Country | Should -BeExactly "USA"
+            $getData.Country | Should -BeExactly "US"
 
             # The person should contain this description
             $getData.Description | Should -BeExactly "New-ZHLSampleADUsers_dont_remove"
@@ -179,8 +185,14 @@ Describe "Function New-ZHLSampleADUsers" -Tag "Unit" {
             # The person's email should contain $domain
             $getData.Email | Should -Match $domain
 
+            # The person should contain a Last Name
+            $getData.FirstName | Should -Not -BeNullOrEmpty
+
             # The person should contain a job
             $getData.Job | Should -Not -BeNullOrEmpty
+
+            # The person should contain a Last Name
+            $getData.LastName | Should -Not -BeNullOrEmpty
 
             # The person should belong to an OU
             $getData.OU | Should -BeIn @("OU=Test,OU=Azure,DC=zackshomelab,DC=com", "OU=Azure,DC=zackshomelab,DC=com", "OU=IT,OU=Azure,DC=zackshomelab,DC=com")

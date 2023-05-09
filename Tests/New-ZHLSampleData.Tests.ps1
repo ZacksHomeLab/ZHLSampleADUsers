@@ -139,7 +139,7 @@ Describe "Function New-ZHLSampleData" -Tag "Unit" {
         $results | Should -BeOfType System.Management.Automation.PSObject
     }
 
-    It "Generates an email address" {
+    It "Contains an email address" {
 
          # Arrange
          $count = 3
@@ -152,5 +152,17 @@ Describe "Function New-ZHLSampleData" -Tag "Unit" {
             # Each email address should match this typical RegEx expression
             $result.Email | Should -Match -RegularExpression "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
          }
+    }
+
+    It "Contains a first name and last name" {
+        # Arrange
+        $count = 1
+
+        # Act
+        $results = New-ZHLSampleData -Count $count -Template $template -Domain $domain
+
+        # Assert
+        $results.FirstName | Should -Not -BeNullOrEmpty
+        $results.LastName | Should -Not -BeNullOrEmpty
     }
 }
