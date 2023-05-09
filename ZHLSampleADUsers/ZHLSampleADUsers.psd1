@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.3.3'
+    ModuleVersion     = '0.4.0'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -93,6 +93,11 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.4.0 20230508
+* Created New-RandomPassword.ps1
+* Added -Enabled to New-ZHLSampleADUsers
+* Adding -Enabled requires the account to have a password, which is where New-RandomPassword comes in.
+* Modified New-ADUser in New-ZHLSampleADUsers to support -Enabled & -AccountPassword
 0.3.3 20230508
 * Removed Debug messages in New-ZHLSampleData and modified variable dataModifiedUnique
 * Added a condition to run -Unique in New-ZHLSampleData only if Count is greater than 1

@@ -17,6 +17,17 @@
     The PSSession of the machine that has access to Active Directory. Active Directory commands will run from said session.
 .PARAMETER OUs
     The Active Directory Organizational Units to place said generated Users in. The script will randomize the provided OUs.
+.PARAMETER Enabled
+    Specifies if an account is enabled. An enabled account requires a password. 
+    
+    This parameter sets the Enabled property for an account object. 
+    
+    This parameter also sets the ADS_UF_ACCOUNTDISABLE flag of the Active Directory User Account Control (UAC) attribute. 
+    
+    The acceptable values for this parameter are:
+
+        $False or 0
+        $True or 1
 .PARAMETER LDAPFilter
     Specifies an LDAP query string that is used to filter Active Directory objects. 
 
@@ -125,6 +136,9 @@ function New-ZHLSampleADUsers {
             ParameterSetName="ProvidedOUs")]
         [Alias("Identity")]
         [Object[]]$OUs,
+
+        [parameter(Mandatory=$false)]
+        [switch]$Enabled,
 
         [parameter(Mandatory,
             ValueFromPipelineByPropertyName,
@@ -355,8 +369,6 @@ function New-ZHLSampleADUsers {
             $newZHLSampleDataSplatter.Add('Unique', $true)
             $newZHLSampleDataSplatter.Add('ErrorAction', 'Stop')
 
-            Write-Debug "New-ZHLSampleADUsers: New-ZHLSampleData Splatter = $newZHLSampleDataSplatter"
-
             Write-Verbose "New-ZHLSampleADUsers: Creating sample data..."
             $sampleData = New-ZHLSampleData @newZHLSampleDataSplatter
 
@@ -371,7 +383,6 @@ function New-ZHLSampleADUsers {
 
         #region Add Users to Active Directory
         if (-not $DryRun) {
-            Write-Verbose "New-ZHLSampleADUsers: Begin creating PSObject containing New-ADUser Parameters..."
             try {
 
                 if (-not ($PSBoundParameters.ContainsKey('Session'))) {
@@ -379,14 +390,13 @@ function New-ZHLSampleADUsers {
                     # Create credential param splatter for New-ADUser
                     if ($PSBoundParameters.ContainsKey('Server') -and 
                         ($Server -notmatch $(hostname) -and $Server -ne 'localhost')) {
-                        
-                            Write-Debug "New-ZHLSampleADUsers: Adding 'Server' with value $Server to our parameter splat"
                             $newADUserCredentialSplatter.Add('Server', $Server)
                     }
                     if ($PSBoundParameters.ContainsKey('Credential')) {
-                        Write-Debug "New-ZHLSampleADUsers: Adding 'Credential' to our parameter splat"
                         $newADUserCredentialSplatter.Add('Credential', $Credential)
                     }
+
+                    Write-Verbose "New-ZHLSampleADUsers: Attempting to add users to Active Directory..."
 
                     # Add Users to Active Directory
                     foreach ($person in $sampleData) {
@@ -394,6 +404,7 @@ function New-ZHLSampleADUsers {
                         $newADUserSplatter = @{}
                         Write-Debug "New-ZHLSampleADUsers: Attempting to add person $($Person.SamAccountName) in Active Directory."
                         $newADUserSplatter = @{
+                            'Name' = $person.Person
                             'City' = $person.City
                             'Country' = $person.Country
                             'Company' = $person.Company
@@ -406,16 +417,26 @@ function New-ZHLSampleADUsers {
                             'ErrorAction' = 'Stop'
                         }
                         # Add the credential splatter onto $newADUserSplatter
-                        if ($null -ne $newADUserCredentialSplatter.Keys) {
+                        if ($null -ne $newADUserCredentialSplatter) {
                             $newADUserSplatter += $newADUserCredentialSplatter
                         }
                         
+                        # If $Enabled is true, we'll need to create a password for the user account
+                        if ($Enabled) {
+                            $newADUserSplatter.Add('Enabled', $true)
+                            # Reset accountPassword just in case
+                            $null = $accountPassword
+
+                            # Generate a random password for said individual
+                            $accountPassword = (New-RandomPassword -length 40) | ConvertTo-SecureString -AsPlainText
+                            $newADUserSplatter.Add('AccountPassword', $accountPassword)
+                        }
                         New-ADUser @newADUserSplatter
                     }
                 } else {
 
                     # Add Users to Active Directory via Invoke-Command
-                    Write-Debug "New-ZHLSampleADUsers: Attempting to add users to Active Directory via Invoke-Command."
+                    Write-Verbose "New-ZHLSampleADUsers: Attempting to add users to Active Directory via Invoke-Command."
                     Invoke-Command -Session $Session -ScriptBlock {
                         foreach ($person in $using:sampleData) {
 
@@ -424,6 +445,7 @@ function New-ZHLSampleADUsers {
 
                             # Populate parameter splatter
                             $newADUserSplatter = @{
+                                'Name' = $person.Person
                                 'City' = $person.City
                                 'Country' = $person.Country
                                 'Company' = $person.Company
@@ -460,7 +482,6 @@ function New-ZHLSampleADUsers {
 
         #region Output data if -PassThru
         if ($Passthru) {
-            Write-Debug "New-ZHLSampleADUsers: Output generated Active Directory user data to pipeline."
             return $sampleData
         }
         #endregion
