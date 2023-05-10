@@ -15,7 +15,7 @@
     Use this switch if you want to retrieve unique values as there's a chance to get duplicates.
 .EXAMPLE
     $OUs = (Get-ADOrganizationalUnit -Filter "Name -ne 'Domain Controllers'")
-    $Template = (New-ZHLTemplateString)
+    $Template = (Get-TemplateString)
 
     New-ZHLSampleData -Count 50 -Template $Template -Domain 'zackshomelab.com' -OUs $OUs -Unique
 
@@ -79,7 +79,7 @@ function New-ZHLSampleData {
     Process {
 
         #region Add SamAccountName, OU, Description, and Email to each Person
-        Write-Debug "New-ZHLSampleData: Begin generating $Count person(s) using template $Template."
+        Write-Verbose "New-ZHLSampleData: Begin generating $Count person(s) using provided template."
         $data = Invoke-Generate -Count $Count -Template $Template -Culture en -AsPSObject -ErrorAction Stop
 
         $dataModified = foreach ($person in $data) {

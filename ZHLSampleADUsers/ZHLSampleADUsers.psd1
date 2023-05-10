@@ -4,7 +4,7 @@
     RootModule        = 'ZHLSampleADUsers.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.6.2'
+    ModuleVersion     = '0.7.0'
 
     # ID used to uniquely identify this module
     GUID              = '36fac494-f17d-497e-a98a-54ff760a6cfe'
@@ -58,7 +58,7 @@
     # NestedModules = @()
 
     # Functions to export from this module
-    FunctionsToExport = @('New-ZHLSampleADUsers', 'New-ZHLSampleData', 'New-ZHLTemplateString')
+    FunctionsToExport = @('New-ZHLSampleADUsers', 'New-ZHLSampleData')
 
     # Cmdlets to export from this module
     CmdletsToExport   = @()
@@ -93,6 +93,10 @@
             LicenseUri = "https://github.com/ZacksHomeLab/ZHLSampleADUsers/blob/main/LICENSE"
 
             ReleaseNotes = @"
+0.7.0 20230508
+* Renamed New-ZHLTemplateString to Get-TemplateString
+* Moved Get-TemplateString to the Private folder
+* Modified all files mentioning New-ZHLTemplateString to use Get-TemplateString
 0.6.2 20230508
 * Added README.md
 * Modified Examples

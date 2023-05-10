@@ -10,7 +10,7 @@
 .LINK
     GitHub - https://github.com/ZacksHomeLab
 #>
-function New-ZHLTemplateString {
+function Get-TemplateString {
     [cmdletbinding()]
     param (
     )

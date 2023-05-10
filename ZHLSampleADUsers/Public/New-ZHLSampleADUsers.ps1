@@ -422,7 +422,7 @@ function New-ZHLSampleADUsers {
             if ($PSBoundParameters.ContainsKey('Domain')) {
                 $newZHLSampleDataSplatter.Add('Domain', $Domain)
             }
-            $newZHLSampleDataSplatter.Add('Template', (New-ZHLTemplateString))
+            $newZHLSampleDataSplatter.Add('Template', (Get-TemplateString))
             if ($null -ne $orgUnits -and $orgUnits -ne "") {
                 $newZHLSampleDataSplatter.Add('OUs', $orgUnits)
             }

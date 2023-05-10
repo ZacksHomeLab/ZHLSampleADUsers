@@ -12,6 +12,8 @@ BeforeAll {
     $moduleRoot = Split-Path -Path (Resolve-Path "$projectRoot\*\*.psd1")
     $moduleName = Split-Path -Path $moduleRoot -Leaf
 
+    # Load Get-TemplateString as it's a private function.
+    . "$projectRoot\Private\Get-TemplateString.ps1"
     <#
         As New-ZHLSampleData is an exported 'Public' function, we can access
         said function by importing our downloaded module.
@@ -33,13 +35,13 @@ BeforeAll {
 
     # Generate a domain and template string for all Unit tests
     $domain = "example.com"
-    $template = New-ZHLTemplateString
+    $template = Get-TemplateString
 }
 
 <#
     'Describe' is a logical group of tests. 
     
-    All our tests for New-ZHLTemplateString will reside in a single 'Describe' group. 
+    All our tests for Get-TemplateString will reside in a single 'Describe' group. 
     
     You may have more than one describe in a tests file, but in our case, we only need one.
 #>
